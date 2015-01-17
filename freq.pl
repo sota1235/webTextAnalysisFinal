@@ -2,61 +2,75 @@
 use utf8;
 use Encode;
 use Net::Twitter;
+binmode(STDOUT,":encoding(utf-8)");
 
 # consumer_key / access_token
 require './keys_local.pl'
 
-# 画面に表示するときは EUC で表示
-# ターミナルに応じて shift-jis, euc-jp にすることもできます．
-binmode(STDOUT,":encoding(utf-8)");
+# Net::Twitter
+$twitter = Net::Twitter->new(
+  traits => [qw/API::RESTv1_1/],
+  consumer_key        => $consumer_key,
+  consumer_secret     => $consumer_key_secret,
+  access_token        => $access_token,
+  access_token_secret => $access_token_secret,
+  ssl => 1,
+);
 
-# 頻度を格納する連想配列
-%hash = ();
+# 自分のタイムラインを取得
+$option = { count => 10 };
+$timeline = $twitter->home_timeline($option);
+$flag   = 0; # ら抜き注意対象が１人でも入れば1(true)に変更
 
-# okashira.txt.chasen の読み込み
-# chasen < okashira.txt > okashira.txt.chasen として
-# あらかじめ作成しておく
-open(IN,"tweet.txt.chasen") || die "ERROR: $!";
+foreach $tweet (@$timeline) {
+  open(OUT, ">output.txt") || die "ERROR: $!";
+  binmode(OUT, ":encoding(euc-jp)");
 
-# okashira.txt.chasen は EUC で書かれているので EUC として読み込む
-binmode(IN,":encoding(euc-jp)");
+  # ツイートをoutput.txtに書き込み
+  print OUT $tweet->{text}."\n";
+  # チェック
+  ($result, $tStr, $fStr) = &checkTweet;
+  if($result) {
+    # flag変更
+    $flag = 1;
+    # もしら抜き言葉があればリプライ
+    $text = '@' + $tweet->{user}{screen_name} +  &makeNoticeTweet($tStr, $fStr);
+    $body = { status => $text };
+    eval { $twitter->update($body); };
+    if($@) print "Error: $@\n";
+  };
 
-# IN から一行ずつ読み込む
-# $_ に値が格納されていることに注意
-while(<IN>){
-  # $_ の末尾のを取り除く
-  chomp;
-
-  # 読み込んだ行が EOS (文末)の場合
-  if(/^EOS/){
-    # 何もしない
-  }else{
-    # 読み込んだ行をタブ区切りで配列化
-    # 配列には，単語，読み，標準形，品詞・・・が入っている
-    # どのような行か，okashira.txt.chasen の中身をエディタで確認してみましょう．
-    @list = split(/\t/);
-
-    # 名詞の場合だけ頻度表を更新する
-    if($list[3] =~ /^名詞.*/){
-      # すでに連想配列に単語が入っている場合
-      if(defined($hash{$list[0]})){
-        # 単語の頻度を１増やす
-        $hash{$list[0]}++;
-      }else{
-        # 単語の頻度を１にする
-        $hash{$list[0]} = 1;
-      }
-    }
-  }
-}
-# ファイルを閉じる
-close(IN);
-
-# 連想配列のキー（表の左側）を
-# 一つずつ $word という変数に入れて処理
-foreach $word (keys %hash){
-  # 単語，頻度を表示
-  print "$word\t$hash{$word}\n";
+  close(OUT);
 }
 
-# end of file
+# もし一人もら抜き言葉を間違えていなければ平和ツイート
+if($flag) {
+  $text = &makeNormalTweet;
+  $body = { status => $text };
+  eval { $twitter->update($body); }
+  if($@) print "Error: $@\n";
+}
+
+# chasenを用いてら抜き言葉があるかどうか解析
+# @param  $tweet   ツイート
+# @return $result  解析結果
+# @return $tStr    正しいら抜き言葉   $resultがfalseの場合null
+# @return $fStr    間違ったら抜き言葉 $resultがfalseの場合null
+sub checkTweet {
+  $tweet = @_;
+
+}
+
+# ツイートパターンからランダムに決定して注意用ツイートを作成
+# @param  $tStr  正しいら抜き言葉
+# @param  $fStr  間違ったら抜き言葉
+# @return $tweet ツイート
+sub makeNoticeTweet {
+  ($tStr, $fStr) = @_;
+}
+
+# ツイートパターンからランダムにツイートを返す
+# @return $tweet ツイート
+sub makeNormalTweet {
+
+}

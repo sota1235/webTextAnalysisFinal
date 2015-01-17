@@ -1,11 +1,10 @@
 #!/usr/bin/perl
-#
-# 練習問題２のプログラム
-# XXX を埋めないと動きません．
-# このファイルは utf-8 エンコーディングである必要があります．
-#
 use utf8;
 use Encode;
+use Net::Twitter;
+
+# consumer_key / access_token
+require './keys_local.pl'
 
 # 画面に表示するときは EUC で表示
 # ターミナルに応じて shift-jis, euc-jp にすることもできます．
@@ -17,7 +16,7 @@ binmode(STDOUT,":encoding(utf-8)");
 # okashira.txt.chasen の読み込み
 # chasen < okashira.txt > okashira.txt.chasen として
 # あらかじめ作成しておく
-open(IN,"okashira.txt.chasen") || die "ERROR: $!";
+open(IN,"tweet.txt.chasen") || die "ERROR: $!";
 
 # okashira.txt.chasen は EUC で書かれているので EUC として読み込む
 binmode(IN,":encoding(euc-jp)");

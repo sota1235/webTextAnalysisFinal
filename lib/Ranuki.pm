@@ -21,8 +21,8 @@ sub new {
   my $normalTweets;
 
   return bless {
-  	nt => $nt,
-  	normalTweets => $normalTweets
+    nt => $nt,
+    normalTweets => $normalTweets
   };
 }
 
@@ -57,9 +57,15 @@ sub getTweets {
   return %hash;
 }
 
+# 形態素解析して動詞のみ返す
+# @param  $text  解析する文章
+# @return @words 解析した文章(動詞２つ)
 sub analyse {
 }
 
+# ら抜き言葉かどうかチェックする
+# @param  @words 動詞２つ
+# @return $flag  1 or 0
 sub check {
 }
 

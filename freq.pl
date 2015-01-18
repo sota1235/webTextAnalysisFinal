@@ -22,8 +22,24 @@ $tw = Net::Twitter->new(
 
 # 自分のタイムラインを取得
 %timeline = &getTweets($tw, 10);
+$flag = 1;
 
-&normalTweet($tw);
+while(my($key, $value) = each(%timeline)) {
+  print $value."\n";
+  @words = &analyse($value);
+  if(@words) {
+    print @words."\n";
+    if(&check(@words)) {
+      # notice tweet
+      $flag = 0;
+    }
+  }
+}
+
+# 誰も文法をミスってなかった場合、平和ツイート
+if(flag) {
+  &normalTweet($tw);
+}
 
 # タイムライン取得
 sub getTweets {
@@ -57,6 +73,7 @@ sub normalTweet {
 sub analyse {
   my ($text) = @_;
   my @res;
+  my $flag = 0;
   my $mecab  = Text::MeCab->new;
   $node = $mecab->parse($text);
   while($node) {
@@ -64,9 +81,31 @@ sub analyse {
     my $feature = decode_utf8 $node->feature;
     my @f = split(/,/, $feature);
     if(@f[0] eq "動詞") {
-      push(@res, ($surface, @f[6]));
+      $flag = 1;
+      push(@res, ($surface, @f[6], @f[7]));
+    }
+    $length = $#res + 1;
+    if($length == 6) {
+      last;
     }
     $node = $node->next;
   }
-  return @res;
+  if($flag) {
+    return @res;
+  } else {
+    return ();
+  }
+}
+
+# ら抜き言葉になってるかどうかチェック
+# @param  @words @body, @tailの情報が入ってる
+# @return 1 or 0 (True or False)
+sub check {
+  my (@words) = @_;
+  if(@words[2] =~ /イ|キ|シ|チ|ニ|ヒ|ミ|リ|エ|ケ|セ|テ|ネ|ヘ|メ|レ/) {
+    if(substr(@words[3], 0, 1) eq "れ") {
+      return 1;
+    }
+  }
+  return 0;
 }

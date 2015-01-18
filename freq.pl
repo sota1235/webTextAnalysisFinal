@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use utf8;
 use Encode;
+use Data::Dumper;
 use Net::Twitter;
 binmode(STDOUT,":encoding(utf-8)");
 
@@ -8,7 +9,7 @@ binmode(STDOUT,":encoding(utf-8)");
 require './keys_local.pl'
 
 # Net::Twitter
-$twitter = Net::Twitter->new(
+$tw = Net::Twitter->new(
   traits => [qw/API::RESTv1_1/],
   consumer_key        => $consumer_key,
   consumer_secret     => $consumer_key_secret,
@@ -18,8 +19,8 @@ $twitter = Net::Twitter->new(
 );
 
 # 自分のタイムラインを取得
-$option = { count => 10 };
-$timeline = $twitter->home_timeline($option);
+$timeline = &getTweets(10);
+warn Dumper $rakuni;
 $flag   = 0; # ら抜き注意対象が１人でも入れば1(true)に変更
 
 foreach $tweet (@$timeline) {
@@ -51,26 +52,16 @@ if($flag) {
   if($@) print "Error: $@\n";
 }
 
-# chasenを用いてら抜き言葉があるかどうか解析
-# @param  $tweet   ツイート
-# @return $result  解析結果
-# @return $tStr    正しいら抜き言葉   $resultがfalseの場合null
-# @return $fStr    間違ったら抜き言葉 $resultがfalseの場合null
-sub checkTweet {
-  $tweet = @_;
-
-}
-
-# ツイートパターンからランダムに決定して注意用ツイートを作成
-# @param  $tStr  正しいら抜き言葉
-# @param  $fStr  間違ったら抜き言葉
-# @return $tweet ツイート
-sub makeNoticeTweet {
-  ($tStr, $fStr) = @_;
-}
-
-# ツイートパターンからランダムにツイートを返す
-# @return $tweet ツイート
-sub makeNormalTweet {
-
+sub getTweets {
+  my ($tw, $num) = @_;
+  my $option = { count => $num };
+  my $timeline = $tw->home_timeline($option);
+  my %hash;
+  # hashにツイートとユーザ名を追加
+  foreach $t (@$timeline) {
+    my $user_name = $t->{user}{screen_name};
+    my $text      = $t->{text};
+    $hash{ $user_name } = $text;
+  };
+  return %hash;
 }

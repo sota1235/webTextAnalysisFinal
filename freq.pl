@@ -7,6 +7,7 @@ binmode(STDOUT,":encoding(utf-8)");
 
 # consumer_key / access_token
 require './keys_local.pl';
+require './data/tweets.pl';
 
 # Net::Twitter
 $tw = Net::Twitter->new(

@@ -51,3 +51,22 @@ sub normalTweet {
   eval { $tw->update($body) };
   if($@) { print "Error: $@\n" }
 }
+
+# 形態素解析し、動詞が含まれた二次元配列のみreturn
+sub analyse {
+  my ($text) = @_;
+  # ツイートをoutput.txtに書き込む
+  open(OUT, ">output.txt") || die "ERROR: $!";
+  binmode(OUT, ":encoding(euc-jp)");
+
+  print OUT $text;
+  my $chasen_result = `chasen < output.txt`;
+  my @res;
+  foreach my $line (split(/\n/, $chasen_result)) {
+    @words = split(/\t/, $line);
+    if(@words[3] =~ "動詞") {
+      push(@res, (@words[0], @words[2]));
+    }
+  }
+  return @res;
+}

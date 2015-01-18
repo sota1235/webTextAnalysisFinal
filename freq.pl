@@ -43,8 +43,9 @@ sub getTweets {
 # 平和ツイート
 sub normalTweet {
   my ($tw) = @_;
-  my $length = @$normalTweets;
+  my $length = $#normalTweets;
   my $tweet = @normalTweets[int(rand($length))];
+  utf8::encode($tweet);
   # ツイート
   my $body = { status => $tweet };
   eval { $tw->update($body) };

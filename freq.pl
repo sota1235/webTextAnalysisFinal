@@ -45,7 +45,7 @@ sub normalTweet {
   my ($tw) = @_;
   my $length = $#normalTweets;
   my $tweet = @normalTweets[int(rand($length))];
-  utf8::encode($tweet);
+  $tweet = decode("utf-8", $tweet);
   # ツイート
   my $body = { status => $tweet };
   eval { $tw->update($body) };

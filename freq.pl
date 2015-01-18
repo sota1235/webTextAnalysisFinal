@@ -6,7 +6,7 @@ use Net::Twitter;
 binmode(STDOUT,":encoding(utf-8)");
 
 # consumer_key / access_token
-require './keys_local.pl'
+require './keys_local.pl';
 
 # Net::Twitter
 $tw = Net::Twitter->new(
@@ -19,38 +19,8 @@ $tw = Net::Twitter->new(
 );
 
 # 自分のタイムラインを取得
-$timeline = &getTweets(10);
-warn Dumper $rakuni;
-$flag   = 0; # ら抜き注意対象が１人でも入れば1(true)に変更
-
-foreach $tweet (@$timeline) {
-  open(OUT, ">output.txt") || die "ERROR: $!";
-  binmode(OUT, ":encoding(euc-jp)");
-
-  # ツイートをoutput.txtに書き込み
-  print OUT $tweet->{text}."\n";
-  # チェック
-  ($result, $tStr, $fStr) = &checkTweet;
-  if($result) {
-    # flag変更
-    $flag = 1;
-    # もしら抜き言葉があればリプライ
-    $text = '@' + $tweet->{user}{screen_name} +  &makeNoticeTweet($tStr, $fStr);
-    $body = { status => $text };
-    eval { $twitter->update($body); };
-    if($@) print "Error: $@\n";
-  };
-
-  close(OUT);
-}
-
-# もし一人もら抜き言葉を間違えていなければ平和ツイート
-if($flag) {
-  $text = &makeNormalTweet;
-  $body = { status => $text };
-  eval { $twitter->update($body); }
-  if($@) print "Error: $@\n";
-}
+%timeline = &getTweets($tw, 10);
+warn Dumper %timeline;
 
 sub getTweets {
   my ($tw, $num) = @_;
@@ -61,6 +31,7 @@ sub getTweets {
   foreach $t (@$timeline) {
     my $user_name = $t->{user}{screen_name};
     my $text      = $t->{text};
+    print $text;
     $hash{ $user_name } = $text;
   };
   return %hash;

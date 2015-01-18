@@ -3,6 +3,7 @@ use utf8;
 use Encode;
 use Data::Dumper;
 use Net::Twitter;
+use Text::MeCab;
 binmode(STDOUT,":encoding(utf-8)");
 
 # consumer_key / access_token
@@ -55,18 +56,17 @@ sub normalTweet {
 # 形態素解析し、動詞が含まれた二次元配列のみreturn
 sub analyse {
   my ($text) = @_;
-  # ツイートをoutput.txtに書き込む
-  open(OUT, ">output.txt") || die "ERROR: $!";
-  binmode(OUT, ":encoding(euc-jp)");
-
-  print OUT $text;
-  my $chasen_result = `chasen < output.txt`;
   my @res;
-  foreach my $line (split(/\n/, $chasen_result)) {
-    @words = split(/\t/, $line);
-    if(@words[3] =~ "動詞") {
-      push(@res, (@words[0], @words[2]));
+  my $mecab  = Text::MeCab->new;
+  $node = $mecab->parse($text);
+  while($node) {
+    my $surface = decode_utf8 $node->surface;
+    my $feature = decode_utf8 $node->feature;
+    my @f = split(/,/, $feature);
+    if(@f[0] eq "動詞") {
+      push(@res, ($surface, @f[6]));
     }
+    $node = $node->next;
   }
   return @res;
 }

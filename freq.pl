@@ -24,13 +24,18 @@ $tw = Net::Twitter->new(
 %timeline = &getTweets($tw, 10);
 $flag = 1;
 
+# Test
+# %timeline = %falseTestCase;
+
+# 一つ一つのツイートをチェック、処理する
 while(my($key, $value) = each(%timeline)) {
-  print $value."\n";
+  print $key.$value."\n";
   @words = &analyse($value);
   if(@words) {
-    print @words."\n";
     if(&check(@words)) {
-      # notice tweet
+      $cor = @words[0]."ら".@words[3];
+      $mis = @words[0].@words[3];
+      noticeTweet($tw, $key, $mis, $cor);
       $flag = 0;
     }
   }
@@ -62,11 +67,29 @@ sub normalTweet {
   my ($tw) = @_;
   my $length = $#normalTweets;
   my $tweet = @normalTweets[int(rand($length))];
-  $tweet = decode("utf-8", $tweet);
+  $tweet = decode('utf-8', $tweet);
   # ツイート
   my $body = { status => $tweet };
   eval { $tw->update($body) };
   if($@) { print "Error: $@\n" }
+}
+
+# 激おこツイート
+sub noticeTweet {
+  my ($tw, $mention, $mis, $cor) = @_;
+  my $length = $#noticeTweets;
+  my $tweet = "@".$mention." ".@noticeTweets[int(rand($length))];
+  $tweet =~ s/true/$cor/;
+  $tweet =~ s/false/$mis/;
+  $tweet = decode('utf-8', $tweet);
+  # ツイート
+  my $body = { status => $tweet };
+  eval { $tw->update($body) };
+  if($@) {
+    print "Error: $@\n"
+  } else {
+    print "Tweet success: ".$tweet."\n";
+  };
 }
 
 # 形態素解析し、動詞が含まれた二次元配列のみreturn

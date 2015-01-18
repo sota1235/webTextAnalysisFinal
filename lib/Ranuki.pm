@@ -1,7 +1,11 @@
 package Ranuki;
 
+use Exporter;
 use utf8;
 use Encode;
+
+@ISA = qw(Exporter);
+@EXPORT = qw(new normalTweet noticeTweet getTweets analyse check);
 
 binmode(STDOUT, ":encoding(utf-8)");
 
@@ -35,7 +39,7 @@ sub normalTweet {
   # ツイート
   my $body = { status => $tweet };
   eval { $self->{nt}->update($body) };
-  if($@) print "Error: $@\n";
+  if($@) { print "Error: $@\n"; }
 }
 
 sub noticeTweet {
@@ -52,8 +56,10 @@ sub getTweets {
   my %hash;
   # hashにツイートとユーザ名を追加
   foreach $t (@$timeline) {
-    %hash{$t->{user}{screen_name}} = $t->{text};
-  }
+    my $user_name = $t->{user}{screen_name};
+    my $text      = $t->{text};
+    $hash{ "$user_name" } = "$text";
+  };
   return %hash;
 }
 

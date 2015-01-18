@@ -17,3 +17,18 @@ sub new {
     ssl => 1
   );
 }
+
+sub normalTweet {
+}
+
+sub noticeTweet {
+}
+
+sub getTweets {
+}
+
+sub analyse {
+}
+
+sub check {
+}

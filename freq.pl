@@ -29,10 +29,12 @@ $flag = 1;
 
 # 一つ一つのツイートをチェック、処理する
 while(my($key, $value) = each(%timeline)) {
-  print $key.$value."\n";
+  # print "Tweet Data-> User:".$key." Tweet: ".$value."\n";
   @words = &analyse($value);
   if(@words) {
+    # print "\t含まれていた動詞:".@words[0].@words[3]."\n\n";
     if(&check(@words)) {
+      # print "ら抜きはこいつだ！ @".$key." Tweet: ".$value."\n";
       $cor = @words[0]."ら".@words[3];
       $mis = @words[0].@words[3];
       noticeTweet($tw, $key, $mis, $cor);
@@ -77,6 +79,8 @@ sub normalTweet {
 # 激おこツイート
 sub noticeTweet {
   my ($tw, $mention, $mis, $cor) = @_;
+  $cor = encode('utf-8', $cor);
+  $mis = encode('utf-8', $mis);
   my $length = $#noticeTweets;
   my $tweet = "@".$mention." ".@noticeTweets[int(rand($length))];
   $tweet =~ s/true/$cor/;
@@ -127,7 +131,8 @@ sub analyse {
 # @return 1 or 0 (True or False)
 sub check {
   my (@words) = @_;
-  if(@words[2] =~ /イ|キ|シ|チ|ニ|ヒ|ミ|リ|エ|ケ|セ|テ|ネ|ヘ|メ|レ/) {
+  print @words[2];
+  if(chop(@words[2]) =~ /イ|キ|ギ|シ|ジ|チ|ヂ|ニ|ヒ|ビ|ミ|リ|エ|ケ|ゲ|セ|ゼ|テ|デ|ネ|ヘ|ベ|メ|レ/) {
     if(substr(@words[3], 0, 1) eq "れ") {
       return 1;
     }

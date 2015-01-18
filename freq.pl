@@ -89,6 +89,8 @@ sub noticeTweet {
     print "Error: $@\n"
   } else {
     print "Tweet success: ".$tweet."\n";
+    open(DATAFILE, ">", "./data/tweets.log") or die("Error: $!");
+    print DATAFILE $tweet;
   };
 }
 

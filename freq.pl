@@ -21,8 +21,10 @@ $tw = Net::Twitter->new(
 
 # 自分のタイムラインを取得
 %timeline = &getTweets($tw, 10);
-warn Dumper %timeline;
 
+&normalTweet($tw);
+
+# タイムライン取得
 sub getTweets {
   my ($tw, $num) = @_;
   my $option = { count => $num };
@@ -32,8 +34,19 @@ sub getTweets {
   foreach $t (@$timeline) {
     my $user_name = $t->{user}{screen_name};
     my $text      = $t->{text};
-    print $text;
+    # print $text;
     $hash{ $user_name } = $text;
   };
   return %hash;
+}
+
+# 平和ツイート
+sub normalTweet {
+  my ($tw) = @_;
+  my $length = @$normalTweets;
+  my $tweet = @normalTweets[int(rand($length))];
+  # ツイート
+  my $body = { status => $tweet };
+  eval { $tw->update($body) };
+  if($@) { print "Error: $@\n" }
 }
